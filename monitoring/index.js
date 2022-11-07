@@ -8,8 +8,10 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
-const config = require('./config');
+const config = require('./lib/config');
 const fs = require('fs');
+const handlers = require('./lib/handlers');
+const helpers = require('./lib/helpers');
 
 
 // server will respond to all requests with string
@@ -29,7 +31,7 @@ const httpsServerOptions = {
 const httpsServer = https.createServer(
     httpsServerOptions, (req, res) => unifiedServer(req, res));
 httpsServer.listen(config.httpsPort, () => {
-    console.log(config.envName + ' server is listening on port '+config.httpsPort);
+    console.log(config.envName + ' server is listening on port '+ config.httpsPort);
 });
 
 var unifiedServer = (req, res) => {
@@ -70,7 +72,7 @@ var unifiedServer = (req, res) => {
             'queryStringObject': queryStringObject,
             'method' : method,
             'headers': headers,
-            'payload': buffer
+            'payload': helpers.parseJsonToObject(buffer)
         };
 
         // route the request to the handler
@@ -95,20 +97,11 @@ var unifiedServer = (req, res) => {
     });
 };
 
-const handlers = {};
-
-handlers.ping = (data, callback) => {
-    callback(200);  // I am alive!
-}
-
-handlers.notFound = (data, callback) => {
-    callback(404);
-}
-
 // Define a Router
 const router = {
-    'sample' : handlers.sample,
-    'ping' : handlers.ping
+    'ping' : handlers.ping,
+    'users': handlers.users,
+    'tokens': handlers.tokens
 };
 
 
